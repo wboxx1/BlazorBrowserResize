@@ -1,0 +1,47 @@
+﻿@page "/"
+@using BrowserResizeWithJSRuntime.Services
+@inject BrowserResize ResizeService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+<h1>Height: @Height</h1>
+<h1>Width: @Width</h1>
+
+@code{
+    @*public int Height { get; set; }
+    public int Width { get; set; }*@
+    int Height = 0;
+    int Width = 0;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        BrowserResize.OnResize += BrowserHasResized;
+
+        await JSRuntime.InvokeAsync<object>("browserResize.registerResizeCallback");
+
+        Height = await BrowserResize.GetInnerHeight(JSRuntime);
+        Width = await BrowserResize.GetInnerWidth(JSRuntime);
+    }
+
+    private async Task BrowserHasResized()
+    {
+        Height = await BrowserResize.GetInnerHeight(JSRuntime);
+        Width = await BrowserResize.GetInnerWidth(JSRuntime);
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        BrowserResize.OnResize -= BrowserHasResized;
+    }
+
+}
+
